@@ -45,4 +45,5 @@ public class JwtUtil {
                 .getBody();
         return claims.get("role", String.class); // Aquí extraemos el valor del "role" desde los claims
     }
+    
 }

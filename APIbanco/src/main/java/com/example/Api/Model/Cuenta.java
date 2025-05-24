@@ -8,8 +8,6 @@ import jakarta.validation.constraints.Email;
 import java.math.BigDecimal;
 import java.util.Random;
 import com.example.Api.Repository.TipoCuenta;
-import lombok.*;
-
 
 @Entity
 @Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = {"curp", "tipoCuenta"}))
@@ -45,6 +43,10 @@ public class Cuenta {
     
     @NotNull(message = "Contraseña obligatoria")
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$", message = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número")
+    
+    @Column(nullable = false)
+    private boolean activo = true; 
+    
     private String contrasena;
 
     private String numeroTarjeta;
@@ -66,6 +68,9 @@ public class Cuenta {
 
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
+    
+    public boolean getActivo() { return activo; }
+    public void setActivo(boolean activo) { this.activo = activo; }
 
     public String getApellidoPaterno() { return apellidoPaterno; }
     public void setApellidoPaterno(String apellidoPaterno) { this.apellidoPaterno = apellidoPaterno; }
@@ -90,15 +95,9 @@ public class Cuenta {
 
     public Roles getRole() { return role; }
     public void setRole(Roles role) { this.role = role; }
-    // Getter para acceder al saldo de la cuenta
-    public SaldoCuenta getSaldoCuenta() {
-        return saldoCuenta;
-    }
 
-    // Setter si necesitas asignar el saldoCuenta (aunque no suele ser necesario)
-    public void setSaldoCuenta(SaldoCuenta saldoCuenta) {
-        this.saldoCuenta = saldoCuenta;
-    }
+    public SaldoCuenta getSaldoCuenta() { return saldoCuenta;}
+    public void setSaldoCuenta(SaldoCuenta saldoCuenta) { this.saldoCuenta = saldoCuenta;}
 
     private String generarNumeroTarjeta() {
         Random random = new Random();

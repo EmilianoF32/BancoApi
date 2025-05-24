@@ -28,6 +28,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/login", "/auth/register").permitAll() // Permitir login y registro sin autenticación
                 .requestMatchers("/admin/**").hasRole("ADMIN") // Restringir /admin/** solo a administradores 
+                .requestMatchers("/transacciones/**").hasRole("USER")
                 .anyRequest().authenticated() // El resto de endpoints requieren autenticación
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // No usar sesiones

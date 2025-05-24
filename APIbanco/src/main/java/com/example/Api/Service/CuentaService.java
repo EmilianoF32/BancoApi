@@ -9,6 +9,9 @@ import com.example.Api.Repository.*;
 import com.example.Api.Model.Cuenta;
 import java.util.List;
 import com.example.Api.Model.Roles;
+import com.example.Api.Model.SaldoCuenta;
+import java.math.BigDecimal;
+
 
 @Service
 public class CuentaService {
@@ -17,6 +20,9 @@ public class CuentaService {
 
     @Autowired
     private RoleRepository roleRepository;
+    
+    @Autowired
+    private SaldoCuentaRepository saldoCuentaRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;  // Inyectar el PasswordEncoder
@@ -33,7 +39,11 @@ public class CuentaService {
                 .orElseThrow(() -> new RuntimeException("Rol USER no encontrado"));
             cuenta.setRole(userRole);    
         }
-        return cuentaRepository.save(cuenta);
+        Cuenta cuentaGuardada = cuentaRepository.save(cuenta);
+        // Crear el saldo inicial en 0 para la cuenta
+        SaldoCuenta saldoInicial = new SaldoCuenta(cuentaGuardada, BigDecimal.ZERO);
+        saldoCuentaRepository.save(saldoInicial);
+        return cuentaGuardada;
     }
     public Cuenta registrarAdministrador(Cuenta cuenta) {
         // Verificar si ya existe una cuenta con el mismo CURP y tipo de cuenta
@@ -59,20 +69,8 @@ public class CuentaService {
         return cuentaRepository.save(cuenta);
     }
 
-    public Optional<Cuenta> buscarPorNumeroTarjeta(String numeroTarjeta, String usuarioActual) {
-        Optional<Cuenta> cuentaOpt = Optional.ofNullable(cuentaRepository.findByNumeroTarjeta(numeroTarjeta));
-
-        if (cuentaOpt.isPresent()) {
-            Cuenta cuenta = cuentaOpt.get();
-
-            // Si el usuario actual es ADMIN y está intentando acceder a su propia cuenta, se bloquea.
-            if (cuenta.getNumeroTarjeta().equals(usuarioActual) && 
-                cuenta.getRole().getName().equals("ADMIN")) {
-                throw new SecurityException("Los administradores no pueden acceder a su propia cuenta.");
-            }
-        }
-
-        return cuentaOpt;
+    public Optional<Cuenta> buscarPorNumeroTarjeta(String numeroTarjeta) {
+        return Optional.ofNullable(cuentaRepository.findByNumeroTarjeta(numeroTarjeta));
     }
 
     private String generarNumeroTarjeta(TipoCuenta tipoCuenta) {
@@ -109,5 +107,15 @@ public class CuentaService {
     }
     public List<Cuenta> obtenerTodasLasCuentas() {
         return cuentaRepository.findAll();
+    }
+    public boolean deshabilitarCuenta(String numeroTarjeta) {
+        Optional<Cuenta> cuentaOpt = Optional.ofNullable(cuentaRepository.findByNumeroTarjeta(numeroTarjeta));
+        if (cuentaOpt.isPresent()) {
+            Cuenta cuenta = cuentaOpt.get();
+            cuenta.setActivo(false);
+            cuentaRepository.save(cuenta);
+            return true;
+        }
+        return false;
     }
 }
